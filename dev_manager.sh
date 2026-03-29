@@ -115,7 +115,7 @@ delete_project() {
     echo "Entrez le nom du projet à supprimer :"
     read -r project_name
 
-    project_path="$BASE_DIR/$project_name"
+    project_path="$PROJECT_DIR/$project_name"
 
     if [ ! -d "$project_path" ]; then
         echo "Erreur : projet introuvable."
