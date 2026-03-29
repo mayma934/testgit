@@ -34,14 +34,14 @@ create_project() {
     read -r project_name
 
     if [ -z "$project_name" ]; then
-        echo "❌ Erreur : le nom du projet ne peut pas être vide."
+        echo " Erreur : le nom du projet ne peut pas être vide."
         return 1
     fi
 
     project_path="$PROJECT_DIR/$project_name"
 
     if [ -d "$project_path" ]; then
-        echo "❌ Erreur : ce projet existe déjà."
+        echo " Erreur : ce projet existe déjà."
         return 1
     fi
 
@@ -60,7 +60,7 @@ create_project() {
         "$project_path/lib" \
         "$project_path/config" \
         "$project_path/bin" || {
-        echo "❌ Erreur : impossible de créer la structure du projet."
+        echo "Erreur : impossible de créer la structure du projet."
         return 1
     }
 
@@ -80,7 +80,7 @@ create_project() {
         "$project_path/bin/.gitkeep"
 
     echo "Projet '$project_name' créé le $(date)" >> "$LOG_FILE"
-    echo "✅ Projet créé avec succès dans : $project_path"
+    echo " Projet créé avec succès dans : $project_path"
     return 0
 }
 
@@ -142,16 +142,16 @@ delete_project() {
 # -------- Fonction Git Status --------
 git_status_all() {
     cd "$REPO_DIR" || {
-        echo "❌ Erreur : impossible d'accéder au dossier $REPO_DIR"
+        echo " Erreur : impossible d'accéder au dossier $REPO_DIR"
         return 1
     }
 
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo "❌ Erreur : ce dossier n'est pas un dépôt Git."
+        echo " Erreur : ce dossier n'est pas un dépôt Git."
         return 1
     fi
 
-    echo "📁 Statut Git du dépôt principal : $REPO_DIR"
+    echo " Statut Git du dépôt principal : $REPO_DIR"
     git status
 }
 
@@ -161,59 +161,59 @@ git_add_commit() {
     read -r commit_message
 
     if [ -z "$commit_message" ]; then
-        echo "❌ Erreur : le message du commit ne peut pas être vide."
+        echo " Erreur : le message du commit ne peut pas être vide."
         return 1
     fi
 
     cd "$REPO_DIR" || {
-        echo "❌ Erreur : impossible d'accéder au dossier $REPO_DIR"
+        echo " Erreur : impossible d'accéder au dossier $REPO_DIR"
         return 1
     }
 
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo "❌ Erreur : ce dossier n'est pas un dépôt Git."
+        echo " Erreur : ce dossier n'est pas un dépôt Git."
         return 1
     fi
 
-    echo "📁 Dépôt principal : $REPO_DIR"
-    echo "➕ Ajout de tous les fichiers et dossiers..."
+    echo " Dépôt principal : $REPO_DIR"
+    echo " Ajout de tous les fichiers et dossiers..."
     git add -A || {
-        echo "❌ Erreur pendant git add."
+        echo " Erreur pendant git add."
         return 1
     }
 
     if git diff --cached --quiet; then
-        echo "✔️ Aucun changement à commit."
+        echo " Aucun changement à commit."
         return 0
     fi
 
     git commit -m "$commit_message" || {
-        echo "❌ Erreur lors du commit."
+        echo " Erreur lors du commit."
         return 1
     }
 
-    echo "✅ Commit effectué avec succès."
+    echo " Commit effectué avec succès."
 }
 
 # -------- Fonction Git Push --------
 git_push_project() {
     cd "$REPO_DIR" || {
-        echo "❌ Erreur : impossible d'accéder au dossier $REPO_DIR"
+        echo " Erreur : impossible d'accéder au dossier $REPO_DIR"
         return 1
     }
 
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo "❌ Erreur : ce dossier n'est pas un dépôt Git."
+        echo " Erreur : ce dossier n'est pas un dépôt Git."
         return 1
     fi
 
     if ! git rev-parse HEAD >/dev/null 2>&1; then
-        echo "❌ Erreur : aucun commit dans ce dépôt."
+        echo " Erreur : aucun commit dans ce dépôt."
         return 1
     fi
 
     if ! git diff --quiet || ! git diff --cached --quiet; then
-        echo "❌ Erreur : il reste des modifications non commit."
+        echo " Erreur : il reste des modifications non commit."
         echo "Fais d'abord le commit avant le push."
         return 1
     fi
@@ -225,17 +225,17 @@ git_push_project() {
     fi
 
     if [ -z "$remote_name" ]; then
-        echo "🔗 Aucun remote trouvé."
+        echo " Aucun remote trouvé."
         echo "Entrez l'URL du dépôt distant :"
         read -r repo_url
 
         if [ -z "$repo_url" ]; then
-            echo "❌ Erreur : URL vide."
+            echo " Erreur : URL vide."
             return 1
         fi
 
         git remote add origin "$repo_url" || {
-            echo "❌ Erreur : impossible d'ajouter le remote origin."
+            echo "Erreur : impossible d'ajouter le remote origin."
             return 1
         }
 
@@ -245,38 +245,38 @@ git_push_project() {
     remote_url="$(git remote get-url "$remote_name" 2>/dev/null)"
 
     if [ -z "$remote_url" ]; then
-        echo "❌ Erreur : impossible de récupérer l'URL du remote '$remote_name'."
+        echo " Erreur : impossible de récupérer l'URL du remote '$remote_name'."
         return 1
     fi
 
-    echo "🔗 Remote utilisé : $remote_name"
-    echo "🌍 URL : $remote_url"
+    echo " Remote utilisé : $remote_name"
+    echo " URL : $remote_url"
 
     current_branch="$(git branch --show-current)"
 
     if [ "$current_branch" != "develop" ]; then
         if git show-ref --verify --quiet refs/heads/develop; then
-            echo "🔀 Bascule vers la branche develop..."
+            echo " Bascule vers la branche develop..."
             git checkout develop || {
-                echo "❌ Impossible de basculer vers develop."
+                echo " Impossible de basculer vers develop."
                 return 1
             }
         else
-            echo "🌱 Création de la branche develop..."
+            echo " Création de la branche develop..."
             git checkout -b develop || {
-                echo "❌ Impossible de créer la branche develop."
+                echo " Impossible de créer la branche develop."
                 return 1
             }
         fi
     fi
 
-    echo "🚀 Push vers $remote_name/develop..."
+    echo " Push vers $remote_name/develop..."
     git push -u "$remote_name" develop || {
-        echo "❌ Échec du push."
+        echo " Échec du push."
         return 1
     }
 
-    echo "✅ Push réussi vers develop."
+    echo " Push réussi vers develop."
 }
 
 # -------- Boucle principale --------
